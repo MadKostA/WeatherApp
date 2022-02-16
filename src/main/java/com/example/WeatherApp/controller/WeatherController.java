@@ -2,6 +2,8 @@ package com.example.WeatherApp.controller;
 
 import com.example.WeatherApp.entities.Weather;
 import com.example.WeatherApp.service.LiveWeatherService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +21,8 @@ public class WeatherController {
     @GetMapping(value = "/weather")
     public String getCurrentWeather(@RequestParam String city, @RequestParam String date, Model model) {
         Weather weather = liveWeatherService.getWeatherByCityAndDate(city, date);
-        model.addAttribute("weather", weather);
-        return "currentWeather";
+        model.addAttribute("weather", new ResponseEntity<>(weather, HttpStatus.OK));
+        return "weather";
     }
 }
 
