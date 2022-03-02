@@ -8,8 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController // надо использовать RestController
 public class WeatherController {
 
     private LiveWeatherService liveWeatherService;
@@ -19,10 +20,11 @@ public class WeatherController {
     }
 
     @GetMapping(value = "/weather")
-    public String getCurrentWeather(@RequestParam String city, @RequestParam String date, Model model) {
+    public ResponseEntity<Weather> getCurrentWeather(@RequestParam String city, @RequestParam String date, Model model) {
         Weather weather = liveWeatherService.getWeatherByCityAndDate(city, date);
-        model.addAttribute("weather", new ResponseEntity<>(weather, HttpStatus.OK));
-        return "weather";
+//        model.addAttribute("weather", new ResponseEntity<>(weather, HttpStatus.OK));
+//        return "weather"; // не надо использовать шаблонизатор и возвраща просто респ ентити
+        return new ResponseEntity<>(weather, HttpStatus.OK);
     }
 }
 

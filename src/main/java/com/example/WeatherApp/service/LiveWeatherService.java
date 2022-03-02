@@ -1,18 +1,23 @@
 package com.example.WeatherApp.service;
 
+import com.example.WeatherApp.dto.ForecastDto;
+import com.example.WeatherApp.dto.ForecastdayDto;
+import com.example.WeatherApp.dto.WeatherResponseDto;
 import com.example.WeatherApp.entities.Weather;
 import com.example.WeatherApp.repository.WeatherRepo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javassist.tools.web.BadHttpRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriTemplate;
 
 import java.math.BigDecimal;
@@ -29,12 +34,13 @@ public class LiveWeatherService {
     private String apiKey;
 
     private final RestTemplate restTemplate;
-
-    @Autowired
     private WeatherRepo weatherRepo;
+    private ObjectMapper objectMapper;
 
-    public LiveWeatherService(RestTemplateBuilder restTemplateBuilder) {
+    public LiveWeatherService(RestTemplateBuilder restTemplateBuilder, WeatherRepo weatherRepo, ObjectMapper objectMapper) {
         this.restTemplate = restTemplateBuilder.build();
+        this.weatherRepo = weatherRepo;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -44,29 +50,30 @@ public class LiveWeatherService {
 
     public Weather getWeatherByCityAndDate(String city, String date) {
         URI url = new UriTemplate(WEATHER_URL).expand(apiKey, city, date);
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        Weather weather = convertCurrentWeather(response, city, date);
+        ResponseEntity<WeatherResponseDto> response = null;
+        try {
+            response = restTemplate.getForEntity(url, WeatherResponseDto.class);
+        } catch (HttpClientErrorException.NotFound exception){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found", exception);
+        } catch (HttpClientErrorException.BadRequest exception){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request", exception);
+        }
+
+        ForecastDto forecastDto = response.getBody().getForecast();
+        Weather weather = convertCurrentWeather(forecastDto, city, date);
         saveWeatherToDB(weather);
         return weather;
     }
 
-    private Weather convertCurrentWeather(ResponseEntity<String> response, String city, String date) {
-        JSONObject jo;
-        try {
-            jo = (JSONObject) new JSONParser().parse(response.getBody());
-        } catch (ParseException e) {
-            throw new RuntimeException("Error parsing JSON", e);
-        }
-        JSONObject forecast = (JSONObject) jo.get("forecast");
-        JSONArray forecastday = (JSONArray) forecast.get("forecastday");
-        JSONObject innerObject = (JSONObject) forecastday.get(0);
-        JSONObject day = (JSONObject) innerObject.get("day");
+    private Weather convertCurrentWeather(ForecastDto forecastDto, String city, String date) {
+        ForecastdayDto forecastdayDto = forecastDto.getForecastday().get(0);
+        Double average = forecastdayDto.getHour().stream().map(x -> x.getTemp()).reduce(0.0, Double::sum).doubleValue()/24;
         MathContext context = new MathContext(3, RoundingMode.DOWN);
-        BigDecimal value = new BigDecimal(calculateAverage((JSONArray) innerObject.get("hour")), context);
+        BigDecimal value = new BigDecimal(average, context);
         return new Weather(
-                date,
+                forecastdayDto.getDate(),
                 city,
-                (String) ((JSONObject) day.get("condition")).get("text"),
+            "some text",
                 value.doubleValue()
         );
     }
