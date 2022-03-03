@@ -1,7 +1,6 @@
-package com.example.WeatherApp.dto;
+package com.example.WeatherApp.dto.WeatherapiDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 import java.util.List;

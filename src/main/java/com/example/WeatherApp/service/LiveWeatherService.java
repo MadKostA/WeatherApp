@@ -1,12 +1,13 @@
 package com.example.WeatherApp.service;
 
-import com.example.WeatherApp.dto.ForecastDto;
-import com.example.WeatherApp.dto.ForecastdayDto;
-import com.example.WeatherApp.dto.WeatherResponseDto;
+import com.example.WeatherApp.dto.*;
+import com.example.WeatherApp.dto.WeatherapiDto.ForecastDto;
+import com.example.WeatherApp.dto.WeatherapiDto.ForecastdayDto;
+import com.example.WeatherApp.dto.WeatherapiDto.HourDto;
+import com.example.WeatherApp.dto.WeatherapiDto.WeatherResponseDto;
 import com.example.WeatherApp.entities.Weather;
 import com.example.WeatherApp.repository.WeatherRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javassist.tools.web.BadHttpRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,11 +25,12 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.time.LocalDate;
 
 @Service
-public class LiveWeatherService {
+public class LiveWeatherService implements ExternalWeatherService{
 
-    private static final String WEATHER_URL = "http://api.weatherapi.com/v1/history.json?key={key}&q={city}&dt={date}";
+    private static final String WEATHERAPI_URL = "http://api.weatherapi.com/v1/history.json?key={key}&q={city}&dt={date}";
 
     @Value("${api.weatherapi.key}")
     private String apiKey;
@@ -48,32 +50,44 @@ public class LiveWeatherService {
         weatherRepo.save(weather);
     }
 
-    public Weather getWeatherByCityAndDate(String city, String date) {
-        URI url = new UriTemplate(WEATHER_URL).expand(apiKey, city, date);
-        ResponseEntity<WeatherResponseDto> response = null;
+    @Override
+    public WeatherDto getWeatherByCityAndDate(String city, LocalDate date) {
+        URI url = new UriTemplate(WEATHERAPI_URL).expand(apiKey, city, date);
+        ResponseEntity<WeatherResponseDto> response;
         try {
             response = restTemplate.getForEntity(url, WeatherResponseDto.class);
-        } catch (HttpClientErrorException.NotFound exception){
+            if (response.getBody() == null){
+
+            }
+        } catch (HttpClientErrorException.NotFound exception) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found", exception);
-        } catch (HttpClientErrorException.BadRequest exception){
+        } catch (HttpClientErrorException.BadRequest exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request", exception);
         }
-
-        ForecastDto forecastDto = response.getBody().getForecast();
-        Weather weather = convertCurrentWeather(forecastDto, city, date);
-        saveWeatherToDB(weather);
+        ForecastDto forecastDto = null;
+        if (response.getBody() != null)
+            forecastDto = response.getBody().getForecast();
+        WeatherDto weather = null;
+        if (forecastDto != null) {
+            weather = convertCurrentWeather(forecastDto, city, date);
+        }
+//        saveWeatherToDB(weather);
         return weather;
     }
 
-    private Weather convertCurrentWeather(ForecastDto forecastDto, String city, String date) {
+    private WeatherDto convertCurrentWeather(ForecastDto forecastDto, String city, LocalDate date) {
         ForecastdayDto forecastdayDto = forecastDto.getForecastday().get(0);
-        Double average = forecastdayDto.getHour().stream().map(x -> x.getTemp()).reduce(0.0, Double::sum).doubleValue()/24;
+        double average = forecastdayDto
+                .getHour()
+                .stream()
+                .map(HourDto::getTemp)
+                .reduce(0.0, Double::sum) / 24;
         MathContext context = new MathContext(3, RoundingMode.DOWN);
         BigDecimal value = new BigDecimal(average, context);
-        return new Weather(
-                forecastdayDto.getDate(),
+        return new WeatherDto(
+                date,
                 city,
-            "some text",
+                "some text",
                 value.doubleValue()
         );
     }

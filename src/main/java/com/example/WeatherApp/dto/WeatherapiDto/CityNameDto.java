@@ -1,4 +1,4 @@
-package com.example.WeatherApp.dto;
+package com.example.WeatherApp.dto.WeatherapiDto;
 
 import lombok.Data;
 

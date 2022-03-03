@@ -1,8 +1,7 @@
-package com.example.WeatherApp.dto;
+package com.example.WeatherApp.dto.WeatherapiDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.springframework.boot.jackson.JsonComponent;
 
 import java.util.List;
 
