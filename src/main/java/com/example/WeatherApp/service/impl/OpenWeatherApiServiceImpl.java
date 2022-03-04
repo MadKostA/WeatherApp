@@ -26,9 +26,6 @@ import java.time.LocalDate;
 @Slf4j
 public class OpenWeatherApiServiceImpl implements ExternalWeatherService {
 
-    @Value("${api.openweatherapi.key}")
-    private String apiKey;
-
     private final RestTemplate restTemplate;
     private final OpenWeatherApiUrlServiceProp openWeatherApiUrlServiceProp;
     private final WeatherRepo weatherRepo;
@@ -41,11 +38,11 @@ public class OpenWeatherApiServiceImpl implements ExternalWeatherService {
 
     @Override
     public Weather getWeatherByCityAndDate(String city, LocalDate date) {
-        URI url = new UriTemplate(openWeatherApiUrlServiceProp.getUrlApi()).expand(city, apiKey);
+        String url = openWeatherApiUrlServiceProp.getUrlApi(city);
         ResponseEntity<OpenWeatherApiResponseDto> response;
         try {
             response = restTemplate.getForEntity(url, OpenWeatherApiResponseDto.class);
-            log.debug("Get response {}", response.getBody().toString());
+
         } catch (HttpClientErrorException.NotFound exception) {
             log.error("Catch not found exception");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found", exception);
@@ -55,8 +52,10 @@ public class OpenWeatherApiServiceImpl implements ExternalWeatherService {
         }
 
         MainDto mainDto = null;
-        if (response.getBody() != null)
+        if (response.getBody() != null) {
+            log.debug("Get response {}", response.getBody());
             mainDto = response.getBody().getMain();
+        }
         Weather weather = null;
         if (mainDto != null) {
             weather = new Weather(
@@ -65,10 +64,11 @@ public class OpenWeatherApiServiceImpl implements ExternalWeatherService {
                     response.getBody().getWeatherDtoList().get(0).getMain(),
                     mainDto.getAvgTemp()
             );
+            log.debug("Created entity");
         }
         if (weather != null) {
             weatherRepo.save(weather);
-            log.debug("Saved entity in DB {}", weather.toString());
+            log.debug("Saved entity in DB {}", weather);
         }
         return weather;
     }
