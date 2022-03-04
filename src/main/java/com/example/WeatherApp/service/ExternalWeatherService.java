@@ -1,10 +1,9 @@
 package com.example.WeatherApp.service;
 
-import com.example.WeatherApp.dto.WeatherDto;
+import com.example.WeatherApp.entities.Weather;
 
 import java.time.LocalDate;
 
 public interface ExternalWeatherService {
-//    Weather getWeatherByCityAndDate();
-    WeatherDto getWeatherByCityAndDate(String city, LocalDate date);
+    Weather getWeatherByCityAndDate(String city, LocalDate date);
 }

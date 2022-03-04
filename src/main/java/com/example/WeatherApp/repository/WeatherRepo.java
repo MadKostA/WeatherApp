@@ -6,12 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WeatherRepo extends CrudRepository<Weather, Long> {
-//    @Modifying
-//    @Query(
-//            value =
-//                    "insert into weather (avg_temp, city, date, description) values (:avg_temp, :city, :date, :description)",
-//            nativeQuery = true)
-//    void insertWeather(@Param("avg_temp") Double avg_temp, @Param("city") String city,
-//                       @Param("date") String date, @Param("description") String description);
 
 }

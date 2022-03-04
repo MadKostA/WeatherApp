@@ -1,15 +1,14 @@
 package com.example.WeatherApp.service.prop;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@ConfigurationProperties(prefix = "weatherapi")
+@ConfigurationProperties(prefix = "openweatherapi")
 @Getter
 @Setter
-public class WeatherApiUrlServiceProp {
+public class OpenWeatherApiUrlServiceProp {
 
     private String scheme;
     private String host;

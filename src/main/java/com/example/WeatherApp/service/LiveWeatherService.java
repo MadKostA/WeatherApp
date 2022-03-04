@@ -1,29 +1,28 @@
 package com.example.WeatherApp.service;
 
-import com.example.WeatherApp.dto.WeatherDto;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.example.WeatherApp.entities.Weather;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
-@Qualifier("mainService")
-public class LiveWeatherService implements ExternalWeatherService {
+public class LiveWeatherService {
 
-    private ExternalWeatherService weatherApiService;
-    private ExternalWeatherService openWeatherApiService;
+    private final List<ExternalWeatherService> externalWeatherServiceList;
 
-    public LiveWeatherService(@Qualifier("weatherApiService") ExternalWeatherService weatherApiService, @Qualifier("openWeatherApiService") ExternalWeatherService openWeatherApiService) {
-        this.weatherApiService = weatherApiService;
-        this.openWeatherApiService = openWeatherApiService;
+    public LiveWeatherService(List<ExternalWeatherService> externalWeatherServiceList) {
+        this.externalWeatherServiceList = externalWeatherServiceList;
     }
 
-    @Override
-    public WeatherDto getWeatherByCityAndDate(String city, LocalDate date) {
-//        if (date)
-//            return weatherApiService.getWeatherByCityAndDate(city, date);
-//        else
-        return openWeatherApiService.getWeatherByCityAndDate(city, date);
+    public Weather getWeatherByCityAndDate(String city, LocalDate date){
+        Weather weatherDto = null;
+        for (ExternalWeatherService service : externalWeatherServiceList){
+            weatherDto = service.getWeatherByCityAndDate(city, date);
+            if (weatherDto != null)
+                break;
+        }
+        return weatherDto;
     }
 
 }
