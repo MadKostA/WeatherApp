@@ -1,4 +1,4 @@
-package com.example.WeatherApp.dto.YandexWeatherDto;
+package com.example.WeatherApp.dto.OpenWeatherApiDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

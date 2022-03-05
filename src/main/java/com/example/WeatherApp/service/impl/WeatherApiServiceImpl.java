@@ -5,6 +5,8 @@ import com.example.WeatherApp.dto.WeatherapiDto.ForecastdayDto;
 import com.example.WeatherApp.dto.WeatherapiDto.HourDto;
 import com.example.WeatherApp.dto.WeatherapiDto.WeatherResponseDto;
 import com.example.WeatherApp.entities.Weather;
+import com.example.WeatherApp.exceptions.BadRequestException;
+import com.example.WeatherApp.exceptions.NotFoundException;
 import com.example.WeatherApp.repository.WeatherRepo;
 import com.example.WeatherApp.service.ExternalWeatherService;
 import com.example.WeatherApp.service.prop.WeatherApiUrlServiceProp;
@@ -43,13 +45,12 @@ public class WeatherApiServiceImpl implements ExternalWeatherService {
         ResponseEntity<WeatherResponseDto> response;
         try {
             response = restTemplate.getForEntity(url, WeatherResponseDto.class);
-
         } catch (HttpClientErrorException.NotFound exception) {
             log.error("Catch not found exception");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found", exception);
+            throw new NotFoundException("Not found");
         } catch (HttpClientErrorException.BadRequest exception) {
             log.error("Catch bad request exception");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request", exception);
+            throw new BadRequestException("Bad request");
         }
         ForecastDto forecastDto = null;
         if (response.getBody() != null) {

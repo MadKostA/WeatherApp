@@ -1,24 +1,20 @@
 package com.example.WeatherApp.service.impl;
 
-import com.example.WeatherApp.dto.WeatherDto;
-import com.example.WeatherApp.dto.YandexWeatherDto.MainDto;
-import com.example.WeatherApp.dto.YandexWeatherDto.OpenWeatherApiResponseDto;
+import com.example.WeatherApp.dto.OpenWeatherApiDto.MainDto;
+import com.example.WeatherApp.dto.OpenWeatherApiDto.OpenWeatherApiResponseDto;
 import com.example.WeatherApp.entities.Weather;
 import com.example.WeatherApp.repository.WeatherRepo;
 import com.example.WeatherApp.service.ExternalWeatherService;
 import com.example.WeatherApp.service.prop.OpenWeatherApiUrlServiceProp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.util.UriTemplate;
 
-import java.net.URI;
 import java.time.LocalDate;
 
 @Service
