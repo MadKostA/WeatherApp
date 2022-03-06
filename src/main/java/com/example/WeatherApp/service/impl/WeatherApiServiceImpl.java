@@ -5,19 +5,17 @@ import com.example.WeatherApp.dto.WeatherapiDto.ForecastdayDto;
 import com.example.WeatherApp.dto.WeatherapiDto.HourDto;
 import com.example.WeatherApp.dto.WeatherapiDto.WeatherResponseDto;
 import com.example.WeatherApp.entities.Weather;
-import com.example.WeatherApp.exceptions.BadRequestException;
-import com.example.WeatherApp.exceptions.NotFoundException;
+import com.example.WeatherApp.exceptions.ExternalWeatherServiceBadRequestException;
+import com.example.WeatherApp.exceptions.ExternalWeatherServiceNotFoundException;
 import com.example.WeatherApp.repository.WeatherRepo;
 import com.example.WeatherApp.service.ExternalWeatherService;
 import com.example.WeatherApp.service.prop.WeatherApiUrlServiceProp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -47,10 +45,10 @@ public class WeatherApiServiceImpl implements ExternalWeatherService {
             response = restTemplate.getForEntity(url, WeatherResponseDto.class);
         } catch (HttpClientErrorException.NotFound exception) {
             log.error("Catch not found exception");
-            throw new NotFoundException("Not found");
+            throw new ExternalWeatherServiceNotFoundException("Not found");
         } catch (HttpClientErrorException.BadRequest exception) {
             log.error("Catch bad request exception");
-            throw new BadRequestException("Bad request");
+            throw new ExternalWeatherServiceBadRequestException("Bad request");
         }
         ForecastDto forecastDto = null;
         if (response.getBody() != null) {

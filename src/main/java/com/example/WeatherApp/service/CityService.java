@@ -26,9 +26,10 @@ public class CityService implements CityCrudService {
     }
 
     @Override
-    public void save(CityDto cityDto) {
+    public CityDto save(CityDto cityDto) {
         log.debug("Saved city {}", cityDto.getName());
         cityDB.put(cityDto.getName(), cityDto);
+        return cityDto;
     }
 
     @Override

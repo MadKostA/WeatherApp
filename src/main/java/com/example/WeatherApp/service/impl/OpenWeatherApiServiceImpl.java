@@ -3,17 +3,17 @@ package com.example.WeatherApp.service.impl;
 import com.example.WeatherApp.dto.OpenWeatherApiDto.MainDto;
 import com.example.WeatherApp.dto.OpenWeatherApiDto.OpenWeatherApiResponseDto;
 import com.example.WeatherApp.entities.Weather;
+import com.example.WeatherApp.exceptions.ExternalWeatherServiceBadRequestException;
+import com.example.WeatherApp.exceptions.ExternalWeatherServiceNotFoundException;
 import com.example.WeatherApp.repository.WeatherRepo;
 import com.example.WeatherApp.service.ExternalWeatherService;
 import com.example.WeatherApp.service.prop.OpenWeatherApiUrlServiceProp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 
@@ -41,10 +41,10 @@ public class OpenWeatherApiServiceImpl implements ExternalWeatherService {
 
         } catch (HttpClientErrorException.NotFound exception) {
             log.error("Catch not found exception");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found", exception);
+            throw new ExternalWeatherServiceNotFoundException("Not found from");
         } catch (HttpClientErrorException.BadRequest exception) {
             log.error("Catch bad request exception");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request", exception);
+            throw new ExternalWeatherServiceBadRequestException("Bad request from");
         }
 
         MainDto mainDto = null;
